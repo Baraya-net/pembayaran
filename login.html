@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Portal Pelanggan Baraya.Net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === PALET WARNA BARU DARI LOGO (DISAMAKAN) === */
+        :root {
+            --dark-blue: #193869;
+            --cyan: #47BBE3;
+            --orange: #F26F21;
+            --orange-dark: #d85a1b;
+            --orange-light: #f7a979;
+        }
+
+        /* === GAYA EFEK LOADING (DISAMAKAN) === */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100000;
+        }
+        .loader {
+            position: relative; width: 90px; height: 90px;
+        }
+        .loader img {
+            width: 60px; height: 60px;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+        .spin, .spin-reverse {
+            position: absolute; top: 50%; left: 50%;
+            border: 3px solid transparent; border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .spin {
+            width: 75px; height: 75px;
+            border-top: 3px solid var(--orange);
+            border-right: 3px solid var(--cyan);
+            animation: spin 1.2s linear infinite;
+        }
+        .spin-reverse {
+            width: 65px; height: 65px;
+            border-bottom: 3px solid var(--orange);
+            border-left: 3px solid var(--cyan);
+            animation: spin-reverse 1.6s linear infinite;
+        }
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes spin-reverse { 100% { transform: translate(-50%, -50%) rotate(-360deg); } }
+        #initial-loading-screen {
+            background: #fff;
+            transition: opacity 0.8s ease;
+        }
+        #submit-loading-screen {
+            background: #fff; /* Latar diubah menjadi putih solid */
+        }
+        .loading-text-custom {
+            text-align: center; margin-top: 20px; font-size: 16px;
+            font-weight: 500; color: var(--dark-blue);
+        }
+        .hidden { display: none !important; }
+
+        /* === GAYA UTAMA & INPUT KONSISTEN === */
+        body, html {
+            width: 100%; max-width: 400px; margin: 0 auto;
+            overflow-x: hidden; font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .container {
+            position: fixed; justify-content: center; text-align: center;
+            z-index: 99; width: 100%; height: 100%;
+            top: 0; right: 0; left: 0; bottom: 0;
+            background: #fff; overflow-y: auto; padding-bottom: 60px;
+        }
+        #main-content { opacity: 0; transition: opacity 1s ease; }
+        #main-content.show { opacity: 1; }
+        .container1 { background: rgba(255, 255, 255, 0.95); padding: 30px; text-align: center; }
+        .logo { width: 120px; margin-bottom: 10px; margin-left: auto; margin-right: auto; }
+        .title { font-size: 16px; font-weight: bold; color: var(--dark-blue); }
+        .version-text { font-size: 12px; color: #a0a0a0; margin-top: 2px; margin-bottom: 15px; }
+        .input-container { width: 100%; text-align: left; margin-top: 15px; position: relative; }
+        label { font-size: 14px; font-weight: bold; color: var(--dark-blue); display: block; margin-bottom: 4px; }
+        
+        #emailInput, #passwordInput {
+            width: 100%; padding: 12px; border: 1px solid var(--dark-blue); border-radius: 5px;
+            font-size: 14px; display: block; background-color: #ffffff !important;
+            -webkit-appearance: none; appearance: none; box-sizing: border-box;
+        }
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #000 !important;
+            border: 1px solid var(--dark-blue) !important;
+        }
+        input:focus {
+            border-color: var(--cyan); outline: none;
+            box-shadow: 0 0 0 3px rgba(71, 187, 227, 0.3);
+        }
+        .toggle-password { position: absolute; right: 10px; top: 45px; cursor: pointer; color: #555; }
+        .forgot-password-link { text-align: right; margin-top: 5px; font-size: 13px; color: var(--orange); text-decoration: none; }
+        
+        .button {
+            width: 100%; padding: 14px; background: var(--orange); color: white; border: none;
+            border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer;
+            margin-top: 20px; transition: 0.3s;
+        }
+        .button:hover:not(:disabled) { background: var(--orange-dark); }
+        .button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .terms-container { display: flex; align-items: center; margin-top: 15px; text-align: left; font-size: 13px; }
+        .terms-container #termsCheckbox { width: 1.25em; height: 1.25em; margin-right: 8px; flex-shrink: 0; border: 1px solid var(--dark-blue); border-radius: 4px; cursor: pointer; float: none; position: static; }
+        .terms-container label { font-size: 13px; font-weight: normal; color: #333; margin-bottom: 0; }
+        .terms-container .link { color: var(--orange); text-decoration: none; font-weight: 500; }
+        .terms-container .link:hover { text-decoration: underline; }
+        
+        .register-link-container { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #333; }
+        .register-link-container a { font-weight: 500; color: var(--orange); text-decoration: none; }
+        .copyright-compact { text-align: center; font-size: 11px; color: #a0a0a0; margin-top: 8px; padding-bottom: 1rem; }
+
+        .divider-text { position: relative; text-align: center; margin: 1.5rem 0; font-size: 0.85rem; color: #a0a0a0; padding: 0 10px; box-sizing: border-box; }
+        .divider-text::before, .divider-text::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background-color: #d8d8d8; }
+        .divider-text::before { left: 0; }
+        .divider-text::after { right: 0; }
+        .divider-text span { background: #ffffff; padding: 0 10px; position: relative; z-index: 10; }
+
+        .baraya-google-button {
+            background-color: #ffffff; color: #3c4043; border: 1px solid #dadce0;
+            transition: background-color 0.3s, box-shadow 0.3s; font-weight: 500;
+            display: inline-flex !important; align-items: center; justify-content: center;
+            gap: 0.5rem; cursor: pointer; padding: 10px 20px; font-size: 16px;
+            border-radius: 50px; white-space: nowrap; line-height: 1.2;
+        }
+        .baraya-google-button:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #cdd1d4; background-color: #f8f9fa; }
+        .baraya-google-button img { height: 20px; width: 20px; }
+        .google-button-container { text-align: center !important; margin-top: 10px !important; }
+    </style>
+</head>
+<body>
+
+<div id="initial-loading-screen" class="loading-overlay">
+    <div class="loader">
+        <div class="spin"></div>
+        <div class="spin-reverse"></div>  
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjVvOQkkrontpXSMNKN6dpwEfAq4cf7jI84xRG52okDuX8LRqwgo-6s0MrOR8ZShANBgclMGaVRuirWrBSNTFADlvEY2NNtPwGmGecNDtPZ4Ip9rOrS2XcPYFpEJeV7hGM-j-aqZc86jKwqrT0Ak2kaBRgNfY8frszAKupMnS6PAO-9TywCa6ig1cRpCFtN/s1600/3D-LOGO.png" alt="Logo"
+             onerror="this.onerror=null;this.src='https://placehold.co/60x60/e0e0e0/333?text=Logo';">
+    </div>
+</div>
+
+<!-- Loading screen SAAT SUBMIT LOGIN -->
+<div id="submit-loading-screen" class="loading-overlay hidden">
+    <div class="flex flex-col items-center">
+        <div class="loader">
+            <div class="spin"></div>
+            <div class="spin-reverse"></div>  
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjVvOQkkrontpXSMNKN6dpwEfAq4cf7jI84xRG52okDuX8LRqwgo-6s0MrOR8ZShANBgclMGaVRuirWrBSNTFADlvEY2NNtPwGmGecNDtPZ4Ip9rOrS2XcPYFpEJeV7hGM-j-aqZc86jKwqrT0Ak2kaBRgNfY8frszAKupMnS6PAO-9TywCa6ig1cRpCFtN/s1600/3D-LOGO.png" alt="Logo"
+                 onerror="this.onerror=null;this.src='https://placehold.co/60x60/e0e0e0/333?text=Logo';">
+        </div>
+        
+    </div>
+</div>
+
+
+<div id="main-content" class="container" style="visibility: hidden;">
+    <div class="container1">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgr1lXJ0GMrOcp64zmZgRSwMpNPH7Me6rDgdppRRK4pkMg7ePMhAAfxamnMH3ScwTNGN9dTLTXuS35OChxz8PG8G5ggE3U0vS-d6-KWd0WIojcp8UCyDlm3YcKoRB22gvFr1p9sNNiNKwXo1mfZf76LoQ3Fl2VnED7oRO-4Ok4svzfWtVaO2qg6lgFaQkEi/s1600/BANER-3D.png" alt="Logo" class="logo">
+        <div class="title">Portal Pelanggan Baraya.Net</div>
+        <p class="version-text">VERSI 3.10</p>
+      
+        <form id="loginForm">
+             <div class="input-container">
+                <label for="emailInput"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="emailInput" placeholder="Masukkan Email" required>
+            </div>
+            <div class="input-container">
+                <label for="passwordInput"><i class="fas fa-lock"></i> Kata Sandi</label>
+                <input type="password" id="passwordInput" placeholder="Masukkan Kata Sandi" required>
+                <span class="toggle-password" onclick="togglePassword()">
+                    <i class="fas fa-eye" id="eye-icon"></i>
+                    <i class="fas fa-eye-slash" id="eye-slash-icon" style="display: none;"></i>
+                </span>
+            </div>
+            
+            <div class="flex justify-end w-full mt-2">
+                 <a href="#" id="reset-password-link" class="forgot-password-link">Lupa Kata Sandi?</a>
+            </div>
+
+            <div class="terms-container">
+                <input type="checkbox" id="termsCheckbox">
+                <label for="termsCheckbox">
+                    Setuju dengan <a href="#" class="link">Syarat & Ketentuan</a>.
+                </label>
+            </div>
+            <button type="submit" id="loginButton" class="button" disabled>Masuk</button>
+        </form>
+     
+    
+        <p class="divider-text"><span>atau</span></p>
+
+        <div class="google-button-container">
+             <button class="baraya-google-button" id="login-google">
+                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google Logo">
+                 Masuk dengan Google
+             </button> 
+        </div>
+       
+
+        <div class="register-link-container">
+            Belum punya akun? 
+            <a href="daftar.html">Daftar sekarang</a>
+        </div>
+        
+        <div class="copyright-compact">Copyright by Baraya.Net</div>
+    </div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- FUNGSI TOGGLE PASSWORD -->
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eye-icon');
+        const eyeSlashIcon = document.getElementById('eye-slash-icon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.style.display = 'none';
+            eyeSlashIcon.style.display = 'inline-block';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.style.display = 'inline-block';
+            eyeSlashIcon.style.display = 'none';
+        }
+    }
+</script>
+
+<!-- LOGIKA JAVASCRIPT UTAMA -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+        getAuth, GoogleAuthProvider, signInWithPopup,
+        signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+   const firebaseConfig = {
+      apiKey: "AIzaSyC2pNYwwn0ildQ4MPlZJv1R6RaEOnKJ4Js",
+      authDomain: "baraya-net.firebaseapp.com",
+      databaseURL: "https://baraya-net-default-rtdb.firebaseio.com",
+      projectId: "baraya-net",
+      storageBucket: "baraya-net.firebasestorage.app",
+      messagingSenderId: "512354998677",
+      appId: "1:512354998677:web:9a91654572c97a958a7e9c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // === ELEMEN DOM ===
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const loginButton = document.getElementById('loginButton');
+
+    // Kontrol Checkbox dan Tombol Login
+    termsCheckbox.addEventListener('change', function() {
+        loginButton.disabled = !this.checked;
+    });
+
+    // === LOGIKA SETELAH DOM SIAP ===
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginGoogleButton = document.getElementById("login-google");
+        const loginForm = document.getElementById("loginForm");
+        const resetPasswordLink = document.getElementById('reset-password-link');
+        const submitLoadingScreen = document.getElementById('submit-loading-screen'); // Referensi loader
+
+        // Cek status login
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                window.location.href = "https://baraya-net.github.io/pembayaran/";
+            }
+        });
+
+        // Event Listeners
+
+        // [DINONAKTIFKAN] - Hapus komentar /* dan */ di bawah ini untuk mengaktifkan kembali Login dengan Google
+        /*
+        loginGoogleButton.addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).catch(error => {
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    Swal.fire({ icon: 'error', title: 'Oops...', text: 'Login dengan Google gagal.' });
+                }
+            });
+        });
+        */
+        
+        resetPasswordLink.addEventListener('click', event => {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Reset Kata Sandi', text: 'Masukkan email Anda untuk menerima tautan reset.',
+                input: 'email', inputPlaceholder: 'contoh@email.com', showCancelButton: true,
+                confirmButtonText: 'Kirim Tautan Reset', cancelButtonText: 'Batal',
+                showLoaderOnConfirm: true,
+                preConfirm: email => sendPasswordResetEmail(auth, email).catch(error => {
+                    let msg = (error.code === 'auth/user-not-found') ? 'Email tidak terdaftar.' : 'Terjadi kesalahan.';
+                    Swal.showValidationMessage(`Gagal: ${msg}`);
+                }),
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then(result => {
+                if (result.isConfirmed) {
+                    Swal.fire({ icon: 'success', title: 'Tautan Terkirim!', text: `Tautan reset telah dikirim ke email Anda.` });
+                }
+            });
+        });
+
+        loginForm.addEventListener("submit", async event => {
+            event.preventDefault();
+            const email = document.getElementById("emailInput").value.trim();
+            const password = document.getElementById("passwordInput").value;
+
+            submitLoadingScreen.classList.remove('hidden'); // Tampilkan loader
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Redirect akan ditangani oleh onAuthStateChanged
+            } catch (error) {
+                submitLoadingScreen.classList.add('hidden'); // Sembunyikan loader jika gagal
+                let msg = "Email atau password salah. Silakan coba lagi.";
+                if (error.code === "auth/user-disabled") msg = "Akun Anda telah dinonaktifkan.";
+                Swal.fire("Gagal Login", msg, "error");
+            }
+        });
+    });
+</script>
+
+<!-- Logika Loading Screen Awal (Mulus) -->
+<script>
+    window.addEventListener('load', () => {
+        const initialLoadingScreen = document.getElementById("initial-loading-screen");
+        const mainContent = document.getElementById("main-content");
+
+        mainContent.style.visibility = 'visible';
+        mainContent.classList.add("show");
+
+        setTimeout(() => {
+            initialLoadingScreen.style.opacity = '0';
+            initialLoadingScreen.addEventListener('transitionend', () => {
+                initialLoadingScreen.classList.add('hidden');
+            }, { once: true });
+        }, 100);
+    });
+</script>
+
+</body>
+</html>
+
