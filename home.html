@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Beranda - Wifiku</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    
+    <style>
+        /* CSS Tata Letak Utama */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #app-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            background: #f1f5f9; /* slate-100 */
+            opacity: 0; /* Awalnya disembunyikan */
+            transition: opacity 0.5s ease-in; /* Efek fade-in */
+        }
+        #app-wrapper.visible {
+            opacity: 1; /* Kelas untuk menampilkan konten */
+        }
+
+        .preview-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Menyembunyikan scrollbar */
+        .preview-container::-webkit-scrollbar {
+            display: none; /* Untuk Chrome, Safari, dan Opera */
+        }
+        .preview-container {
+            -ms-overflow-style: none;  /* Untuk Internet Explorer dan Edge */
+            scrollbar-width: none;  /* Untuk Firefox */
+        }
+        
+        /* Styles untuk Konten Halaman */
+        .slider, .promo-slider, .package-slider, .layanan-slider {
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+        }
+        .slider::-webkit-scrollbar, .promo-slider::-webkit-scrollbar, .package-slider::-webkit-scrollbar, .layanan-slider::-webkit-scrollbar { 
+            display: none; /* Chrome, Safari, and Opera */
+        }
+        .slide, .promo-slide, .package-slide, .layanan-slide { 
+            scroll-snap-align: start; 
+            flex-shrink: 0; 
+        }
+
+        /* Popup Styles */
+        .popup { transition: opacity 0.3s ease-in-out; }
+        .popup-content { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+        
+        /* Styles untuk Navigasi */
+        .nav-link svg,
+        .nav-link span {
+            color: #374151; /* gray-700 */
+            transition: color 0.2s ease-in-out;
+        }
+        .nav-active svg,
+        .nav-active span {
+            color: #1d4ed8; /* Warna biru aktif */
+        }
+
+        /* === BAGIAN CSS UNTUK EFEK PEMUATAN (DIPERBARUI) === */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #loading-screen.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            animation: spin 0.5s linear infinite;
+            border-top-color: #3b82f6; /* blue-500 */
+            border-right-color: #38bdf8; /* sky-400 */
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .logo-pulse {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .loading-text::after {
+            display: inline-block;
+            animation: dots 1.4s ease-in-out infinite;
+            content: ".";
+            width: 1.5em;
+            text-align: left;
+        }
+
+        @keyframes dots {
+            0% { content: "."; }
+            33% { content: ".."; }
+            66% { content: "..."; }
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+    
+    <!-- === BAGIAN HTML UNTUK EFEK PEMUATAN (DIPERBARUI) === -->
+    <div id="loading-screen">
+        <div class="flex flex-col items-center justify-center">
+            <div class="relative w-24 h-24 flex justify-center items-center">
+                <div class="spinner absolute w-full h-full rounded-full border-4"></div>
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEimggOPbFZBzeqrXzDkpyL9GMSmLKY5efcavfLn7ksmTTxn_OJZ7NVDmP_jAoT5nzRGMF-lxX_HlyHCqrytMshNqRheKgvWNCCMdxqbBsBPjmO3oFbOTe1OGxQUV-E71qHBX_kOUmNtlNjzJ4e75MiVyGMV68AQq6CMiHASedNlhroVX8Iq5kEDnLjIrg79/s1600/3D-LOGO.png"
+                     alt="Loading Logo" class="h-16 w-16 rounded-full logo-pulse"
+                     onerror="this.onerror=null;this.src='https://placehold.co/64x64/e0e0e0/333?text=Logo';">
+            </div>
+            <p class="loading-text text-gray-700 mt-4">Tunggu sebentar</p>
+        </div>
+    </div>
+
+    <!-- Pembungkus Aplikasi Utama -->
+    <div id="app-wrapper">
+        <div class="preview-container">
+            <div class="container mx-auto max-w-lg bg-slate-50 min-h-full">
+                <!-- Header yang Diperbarui -->
+                <header id="main-header" class="sticky top-0 z-50 bg-white shadow-md p-4 flex justify-between items-center rounded-b-2xl">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj-wfNoSHUjxqa0q3z-j1fME1zjAxdUhhNBQ_7JGOA5xyd1PR2an2ZAnaNqRy529U6XcObZlEz64QttjFwd8euOx6VV6mU7-au_Ljr6GnD3TENTH0melQCxLkC8WOTranQKy-QbsAE2an3PeFfMxBHuLBIXiM9qNwEk-_aispj6pSP7NwJhNWuOekeBDy24/s1600/INTERNET-ULTIMATE-SOLUTION.png" alt="BarayaNets Logo" class="h-12">
+                    <div class="flex items-center space-x-4">
+                        <a href="hubungikami.html" class="relative">
+                            <i class="fas fa-headset text-teal-600 text-xl"></i>
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-teal-500 ring-2 ring-white"></span>
+                        </a>
+                        <button id="notification-btn" class="relative">
+                            <i class="fas fa-bell text-teal-600 text-xl"></i>
+                            <span id="notification-dot" class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white hidden"></span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Konten Aplikasi -->
+                <main id="home-page" class="py-4 space-y-6 pb-24">
+                    <div class="space-y-4">
+                        
+                        <div id="layanan-slider" class="layanan-slider flex overflow-x-auto snap-x snap-mandatory scroll-smooth">
+                           <!-- Konten layanan di-render oleh JavaScript -->
+                        </div>
+                    </div>
+                    <div class="space-y-4 px-4">
+                        <h3 class="font-bold text-lg">Koneksi Internet Bebas Hambatan</h3>
+                        <div id="package-container" class="package-slider flex flex-nowrap overflow-x-auto space-x-4 pb-2">
+                            <!-- Konten paket di-render oleh JavaScript -->
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-lg px-4">Promo Wifiku</h3>
+                        <div id="promo-slider-main" class="promo-slider flex overflow-x-auto snap-x snap-mandatory scroll-smooth">
+                            <!-- Konten promo di-render oleh JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 px-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-lg">Berita</h3>
+                            <a href="#" class="text-sm font-semibold text-cyan-500 hover:text-cyan-600"></a>
+                        </div>
+                        <div id="berita-container" class="space-y-3">
+                            <!-- Konten berita di-render oleh JavaScript -->
+                        </div>
+                    </div>
+                </main>
+                
+                <!-- Halaman Detail Berita (Awalnya Tersembunyi) -->
+                <div id="berita-detail-page" class="hidden">
+                    <header class="sticky top-0 z-10 bg-white shadow-sm p-4 flex items-center">
+                        <button id="berita-detail-back-btn" class="p-2 -ml-2 mr-2 text-gray-600">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <h2 class="text-lg font-bold">Detail Berita</h2>
+                    </header>
+                    <div class="p-4 space-y-4 pb-24">
+                        <h1 id="berita-detail-title" class="text-2xl font-bold leading-tight text-gray-800"></h1>
+                        <div class="flex items-center justify-between text-sm text-gray-500 border-b pb-3">
+                            <span id="berita-detail-meta-loc-date"></span>
+                            <span id="berita-detail-meta-views" class="flex items-center space-x-1.5"></span>
+                        </div>
+                        <img id="berita-detail-image" src="" alt="Gambar Berita" class="w-full rounded-lg shadow-md aspect-video object-cover">
+                        <div id="berita-detail-content" class="text-gray-700 leading-relaxed space-y-3">
+                            <!-- Konten artikel diinjeksikan di sini -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigasi Bawah (DIPINDAHKAN KE DALAM #app-wrapper) -->
+        <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-5px_15px_rgba(0,0,0,0.08)] max-w-lg mx-auto rounded-t-2xl z-[9999]">
+            <div class="relative">
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 z-10">
+                    <a href="wifiku.html" id="center-logo" class="relative block transform hover:scale-105 transition-all duration-200">
+                        <div class="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center border-4 border-white overflow-hidden">
+                            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEimggOPbFZBzeqrXzDkpyL9GMSmLKY5efcavfLn7ksmTTxn_OJZ7NVDmP_jAoT5nzRGMF-lxX_HlyHCqrytMshNqRheKgvWNCCMdxqbBsBPjmO3oFbOTe1OGxQUV-E71qHBX_kOUmNtlNjzJ4e75MiVyGMV68AQq6CMiHASedNlhroVX8Iq5kEDnLjIrg79/s1600/3D-LOGO.png" alt="Logo WiFiKu" class="w-full h-full object-cover">
+                        </div>
+                    </a>
+                </div>
+                <div class="flex items-center justify-between px-2 py-2">
+                    <a href="beranda.html" class="nav-link flex-1 flex flex-col items-center space-y-1 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+                        <span class="text-xs font-medium">Beranda</span>
+                    </a>
+                    <a href="tagihan.html" class="nav-link flex-1 flex flex-col items-center space-y-1 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" /></svg>
+                        <span class="text-xs font-medium">Tagihan</span>
+                    </a>
+                    <div class="w-20 flex-shrink-0"></div>
+                    <a href="riwayat.html" class="nav-link flex-1 flex flex-col items-center space-y-1 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" /></svg>
+                        <span class="text-xs font-medium">Riwayat</span>
+                    </a>
+                    <a href="profil.html" class="nav-link flex-1 flex flex-col items-center space-y-1 py-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                        <span class="text-xs font-medium">Profil</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Pop-up dan elemen lain di luar wrapper utama -->
+    <div id="purchase-popup" class="popup fixed inset-0 bg-slate-50 z-[10000] hidden opacity-0 transition-opacity duration-300">
+        <div class="w-full h-full flex flex-col">
+            <!-- Header -->
+            <header class="sticky top-0 z-10 bg-white shadow-sm p-4 flex items-center flex-shrink-0">
+                <button id="close-purchase-popup-btn" class="p-2 -ml-2 mr-2 text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h2 class="text-lg font-bold">Formulir Pemesanan</h2>
+            </header>
+    
+            <!-- Content -->
+            <div class="overflow-y-auto p-4 flex-grow">
+                <div class="bg-white rounded-lg p-4 shadow-sm mb-4">
+                     <h3 id="purchase-popup-title" class="text-xl font-bold text-gray-800"></h3>
+                     <p class="text-cyan-500 font-semibold">Rp. <span id="purchase-popup-price"></span>/bulan</p>
+                </div>
+                <form id="purchase-form" class="bg-white rounded-lg p-4 shadow-sm space-y-4 text-sm">
+                     <div>
+                        <label for="name" class="block text-gray-600 font-medium mb-1">Nama Lengkap</label>
+                        <input type="text" id="name" name="name" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" placeholder="Masukkan nama Anda">
+                    </div>
+                    <div>
+                        <label for="address" class="block text-gray-600 font-medium mb-1">Alamat Lengkap</label>
+                        <textarea id="address" name="address" rows="2" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" placeholder="Masukkan alamat pemasangan"></textarea>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-gray-600 font-medium mb-1">No. Telepon</label>
+                        <input type="tel" id="phone" name="phone" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" placeholder="e.g., 08123456789">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-600 font-medium mb-1">Email</label>
+                        <input type="email" id="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" placeholder="e.g., nama@email.com">
+                    </div>
+                    <div>
+                        <label for="payment-method" class="block text-gray-600 font-medium mb-1">Metode Pembayaran</label>
+                        <select id="payment-method" name="payment-method" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 bg-white">
+                            <option value="">Pilih Metode</option>
+                            <option>Transfer Bank - BCA</option>
+                            <option>Transfer Bank - Mandiri</option>
+                            <option>E-Wallet - GoPay</option>
+                            <option>E-Wallet - OVO</option>
+                            <option>QRIS</option>
+                        </select>
+                    </div>
+                    <div id="payment-details" class="mt-2 p-3 bg-slate-50 rounded-md hidden"></div>
+                    <div>
+                        <label class="block text-gray-600 font-medium mb-1">Upload Bukti Pembayaran</label>
+                        <label for="payment-proof" class="w-full p-3 border border-gray-300 rounded-lg flex items-center justify-between cursor-pointer bg-white hover:bg-slate-50">
+                            <span id="file-name-display" class="text-gray-500 truncate pr-2">Pilih file untuk diunggah</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                            </svg>
+                        </label>
+                        <input type="file" id="payment-proof" name="payment-proof" accept="image/*" class="hidden">
+                    </div>
+                    <button id="submit-purchase-btn" type="submit" class="w-full bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-cyan-600 transition-all hidden mt-4 disabled:bg-cyan-300">Kirim</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-popup" class="popup fixed inset-0 bg-black bg-opacity-50 z-[10000] flex items-center justify-center p-4 hidden opacity-0">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl text-center popup-content opacity-0 transform scale-95">
+            <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Pesanan Terkirim!</h3>
+            <p class="text-gray-600 mb-6">Tim kami akan segera menghubungi Anda untuk konfirmasi selanjutnya.</p>
+            <button id="close-success-popup-btn" class="w-full bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-cyan-600 transition-colors">Tutup</button>
+        </div>
+    </div>
+    
+    <!-- Pop-up Notifikasi (BARU) -->
+    <div id="notification-popup" class="fixed inset-0 bg-slate-100 z-[10001] hidden flex-col">
+        <header class="sticky top-0 z-10 bg-white shadow-sm p-4 flex items-center flex-shrink-0">
+            <button id="close-notification-popup-btn" class="p-2 -ml-2 mr-2 text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h2 class="text-lg font-bold">Notifikasi</h2>
+        </header>
+        <div id="notification-list-container" class="overflow-y-auto p-4 flex-grow">
+            <!-- Daftar notifikasi akan dimuat di sini -->
+        </div>
+    </div>
+
+    <script>
+        // Fungsionalitas status aktif untuk navigasi baru
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const currentPage = window.location.pathname.split('/').pop();
+            let activeLinkFound = false;
+            navLinks.forEach(link => {
+                const linkPage = link.getAttribute('href');
+                if (linkPage === currentPage) {
+                    link.classList.add('nav-active');
+                    activeLinkFound = true;
+                }
+            });
+            if (!activeLinkFound && (currentPage === '' || currentPage === 'index.html' || currentPage === 'beranda.html')) {
+                 document.querySelector('a[href="beranda.html"]').classList.add('nav-active');
+            }
+        });
+    </script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref, get, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // --- Konfigurasi dan Inisialisasi Firebase ---
+        console.log("DEBUG: Memulai inisialisasi skrip.");
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyC2pNYwwn0ildQ4MPlZJv1R6RaEOnKJ4Js",
+  authDomain: "baraya-net.firebaseapp.com",
+  databaseURL: "https://baraya-net-default-rtdb.firebaseio.com",
+  projectId: "baraya-net",
+  storageBucket: "baraya-net.firebasestorage.app",
+  messagingSenderId: "512354998677",
+  appId: "1:512354998677:web:9a91654572c97a958a7e9c"
+};
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        console.log("DEBUG: Inisialisasi Firebase berhasil.");
+
+
+        const TELEGRAM_BOT_TOKEN = "7773318407:AAGbxlu4MmPpUlBbUjJavO_pRCFdPO29Qsw";
+        const TELEGRAM_CHAT_ID = "1286256542";
+        
+        const packages = [
+            { id: 0, name: "Paket Hemat", speed: "10 Mbps", price: "175.000", devices: "3–4 perangkat", color: "cyan" },
+            { id: 1, name: "Paket Cerdas", speed: "12 Mbps", price: "200.000", devices: "4–5 perangkat", color: "green" },
+            { id: 2, name: "Paket Jago", speed: "15 Mbps", price: "250.000", devices: "5–6 perangkat", color: "blue" },
+            { id: 3, name: "Paket Super", speed: "20 Mbps", price: "300.000", devices: "6–8 perangkat", color: "indigo" }
+        ];
+        const layanan = [
+            { id: 0, title: "Green Energy", color: "green", image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjOmidQunTBip6oUb5FIMDh4SBlCcYJ-23bmiFk3FqNHBlDui6N5Ie2os_QjgAU_g78qSQcVsgjjlMdiMI0wyp1M-pSEb8l4qb38-MfVbQ9LVCgnIZ4mHopPp7JALCkucCXiUwD7i2I4zEJ7m4RVXSvgJBIXq_57U6jRQxEluSf1mi4F_tmHRUelo-dkfVY/s1600/1%20%281%29.png" },
+            { id: 1, title: "Smart & Safe Solution", color: "blue", image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh-TbrPRO7pAP0npeR73aIi9RHMKuT4kJ9kv2oPXvtlm6a_wH-DgP849aY345fv6tDOQC6fEFm8A3CGy8DnYFUOCROr5vfL_rzCcsFE_6ql7Ba3pxHgzJW4SSFwWdopIDTwRKOgexFgODzUfoFSG4Ni2N4wdZRAihvk0XQNmnOZ6l50uRMdfJDGib3EuHnd/s1600/2.png" },
+            { id: 2, title: "Digital Connectivity", color: "purple", image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIHPS371n7hmUgI7ttOvn_HfjzqOfWa133fcG4a4sfghp8Fsr67xcOl9gw7Z90usVS_9E0eDS9rnQnMDIREA5P-BYWBsGadoFpMbUfzq0DH34dbJRaeyKwHZM3hq2_O7XRUNezCKMa22udciHs7TFs2dmrZOfBjQgnu-i9K_YvN4c1Aof-LNby_VAwCqA8/s1600/3.png" }
+        ];
+        const promos = [
+            { id: 0, src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7AL5-DOuO-xwk5CFQvGKFYOMfkG0QPhevZe5Go0Z4sPtMk_5xEVh1OI_56GppFBLBklkywWRAP__dyGPCmIXbRUlS4xwdc-tFXkjraFEx-ANl1mb203jVtzzLVNcjJYjVGzCqL8FREV2fWDGkDxEoYezHPyl5x9zNrClufIwt1fK8DRbv3bFrq70DmRLh/s1600/a.png"},
+            { id: 1, src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjZUJ_BA9EhXKpkUVjpJqX_L68rUgavQJniBlTPKy-HjP8BHWCuIu_bxPuT6G3kshL9yeivyUBndt0FrW1FlJawvvzVPB5FdTzv6PW-6VhxyuCvd9WlYkU5ZwLOc0TU8uRf41xI7VyQ88xKmG9OvzYG1CCiemC36J8m8cY143qDcN3xiRMlGdY_BknVpvNv/s1600/b.png"},
+            { id: 2, src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLA2HTUjbc64dzAjQIGGu39hiCLDC3a5adF6xBZ0279SgQFWzlACJOhZOlrbsarGjok1Mtgod6Zlp8_pByBY4A74LESwmpIEtCIo58pSxKq4TI8GmibhU3vP8rLMN6TmQU6R0T1QxruYEVEnKDUGrDj1VlBpV6cj7J5jeK6_VoW5wCGrCaQLLvjsFQFh8P/s1600/c.png"}
+        ];
+        const paymentMethods = {
+            'Transfer Bank - BCA': { type: 'text', content: 'No. Rekening BCA: <strong>1234567890</strong><br>a.n. PT Wifiku Jaya' },
+            'Transfer Bank - Mandiri': { type: 'text', content: 'No. Rekening Mandiri: <strong>0987654321</strong><br>a.n. PT Wifiku Jaya' },
+            'E-Wallet - GoPay': { type: 'text', content: 'No. GoPay: <strong>08123456789</strong><br>a.n. Wifiku' },
+            'E-Wallet - OVO': { type: 'text', content: 'No. OVO: <strong>08987654321</strong><br>a.n. Wifiku' },
+            'QRIS': { type: 'image', content: 'https://placehold.co/200x200/png?text=SCAN+QRIS' }
+        };
+        
+        // --- Variabel Elemen DOM ---
+        const notificationBtn = document.getElementById('notification-btn');
+        const notificationDot = document.getElementById('notification-dot');
+        const notificationPopup = document.getElementById('notification-popup');
+        const closeNotificationPopupBtn = document.getElementById('close-notification-popup-btn');
+        const notificationListContainer = document.getElementById('notification-list-container');
+        
+        let allNotifications = [];
+        let allBeritaData = [];
+
+        // --- Logika Notifikasi ---
+        async function checkUnreadNotifications(uid) {
+            console.log("DEBUG: Memeriksa notifikasi belum dibaca untuk UID:", uid);
+            const userNotifRef = ref(database, `users/${uid}/lastCheckedNotifications`);
+            try {
+                const lastCheckedSnap = await get(userNotifRef);
+                const lastCheckedTimestamp = lastCheckedSnap.exists() ? lastCheckedSnap.val() : 0;
+                console.log("DEBUG: Waktu terakhir notifikasi dicek (timestamp):", lastCheckedTimestamp);
+
+                const notifQuery = query(collection(db, "notifications"), orderBy("timestamp", "desc"), limit(1));
+                onSnapshot(notifQuery, (snapshot) => {
+                    if (!snapshot.empty) {
+                        const latestNotif = snapshot.docs[0].data();
+                        const latestTimestamp = latestNotif.timestamp ? latestNotif.timestamp.toMillis() : 0;
+                        console.log("DEBUG: Timestamp notifikasi terbaru:", latestTimestamp);
+                        if (latestTimestamp > lastCheckedTimestamp) {
+                            console.log("DEBUG: Ada notifikasi baru, menampilkan titik merah.");
+                            notificationDot.classList.remove('hidden');
+                        } else {
+                            console.log("DEBUG: Tidak ada notifikasi baru.");
+                            notificationDot.classList.add('hidden');
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("DEBUG: Gagal memeriksa notifikasi:", error);
+            }
+        }
+        
+        function renderNotifications() {
+            console.log("DEBUG: Merender notifikasi. Jumlah:", allNotifications.length);
+            if (allNotifications.length === 0) {
+                notificationListContainer.innerHTML = `<p class="text-center text-gray-500 mt-8">Tidak ada notifikasi baru dalam 30 hari terakhir.</p>`;
+                return;
+            }
+            notificationListContainer.innerHTML = allNotifications.map(notif => {
+                 const d = notif.timestamp ? notif.timestamp.toDate() : new Date();
+                 const date = `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
+                 const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                return `
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-3 flex items-start space-x-4">
+                    <div class="bg-blue-100 text-blue-500 rounded-full h-10 w-10 flex-shrink-0 flex items-center justify-center">
+                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">${notif.title}</h4>
+                        <p class="text-gray-600 text-sm mt-1">${notif.message}</p>
+                        <div class="text-xs text-gray-400 mt-2 flex justify-between">
+                            <span>${date}</span>
+                            <span>${time}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        notificationBtn.addEventListener('click', () => {
+            console.log("DEBUG: Tombol notifikasi diklik.");
+            notificationPopup.classList.remove('hidden');
+            notificationPopup.classList.add('flex');
+            notificationDot.classList.add('hidden');
+            
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                console.log("DEBUG: Memperbarui waktu 'lastCheckedNotifications' untuk UID:", currentUser.uid);
+                const userNotifRef = ref(database, `users/${currentUser.uid}/lastCheckedNotifications`);
+                set(userNotifRef, Date.now());
+            }
+
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            console.log("DEBUG: Mengambil notifikasi sejak:", thirtyDaysAgo);
+
+            const notifQuery = query(
+                collection(db, "notifications"), 
+                where("timestamp", ">=", thirtyDaysAgo),
+                orderBy("timestamp", "desc")
+            );
+            
+            onSnapshot(notifQuery, (snapshot) => {
+                console.log("DEBUG: Menerima update notifikasi dari Firestore. Jumlah dokumen:", snapshot.docs.length);
+                allNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderNotifications();
+            }, (error) => {
+                console.error("DEBUG: Gagal mengambil notifikasi, MUNGKIN PERLU INDEX:", error);
+                notificationListContainer.innerHTML = `<p class="text-center text-red-500 mt-8">Gagal memuat notifikasi. Cek konsol untuk detail error, kemungkinan Anda perlu membuat index di Firebase.</p>`;
+            });
+        });
+        
+        closeNotificationPopupBtn.addEventListener('click', () => {
+            console.log("DEBUG: Menutup pop-up notifikasi.");
+            notificationPopup.classList.add('hidden');
+            notificationPopup.classList.remove('flex');
+        });
+
+        // --- RENDER FUNCTIONS ---
+        function renderHomePageContent(berita = []) {
+             console.log("DEBUG: Merender konten halaman utama. Jumlah berita:", berita.length);
+            document.getElementById('package-container').innerHTML = packages.map(p => `
+                <div class="package-slide min-w-[170px] border-2 border-${p.color}-200 rounded-xl p-2 bg-white relative overflow-hidden flex flex-col justify-between cursor-pointer hover:border-${p.color}-500 transition-colors" data-type="package" data-id="${p.id}">
+                    <div class="absolute -top-4 -right-4 w-16 h-16 bg-${p.color}-50 rounded-full"></div>
+                    <div class="relative z-10">
+                        <p class="text-gray-600 font-semibold leading-tight">${p.name} <span class="text-${p.color}-500 font-bold">${p.speed}</span></p>
+                        <p class="text-xl font-bold mt-1 leading-tight">Rp. ${p.price}<span class="text-sm font-normal text-gray-500">/bulan</span></p>
+                    </div>
+                    <p class="relative z-10 text-xs text-gray-500 mt-1 leading-tight">${p.devices}</p>
+                </div>`).join('');
+
+            document.getElementById('layanan-slider').innerHTML = layanan.map(l => `
+                <div class="layanan-slide w-full flex-shrink-0 snap-start px-2 first:pl-4 last:pr-4">
+                    <div class="h-32 bg-cover bg-center relative text-white flex flex-col justify-end p-3 shadow-inner rounded-lg cursor-pointer" style="background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('${l.image}');" data-type="layanan" data-id="${l.id}">
+                    </div>
+                </div>
+                `).join('');
+
+            document.getElementById('promo-slider-main').innerHTML = promos.map(p => `
+                 <div class="promo-slide w-full flex-shrink-0 snap-start px-2 first:pl-4 last:pr-4">
+                    <img src="${p.src}" class="w-full shadow-md cursor-pointer rounded-lg" data-type="promo" data-id="${p.id}" />
+                </div>
+                `).join('');
+                
+            const beritaContainer = document.getElementById('berita-container');
+            if(berita.length > 0) {
+                 beritaContainer.innerHTML = berita.map(b => `
+                    <div class="flex items-center space-x-4 p-2 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors duration-200" data-type="berita" data-id="${b.id}">
+                        <img src="${b.thumb}" alt="Gambar Berita" class="w-28 h-24 object-cover rounded-lg flex-shrink-0">
+                        <div class="flex flex-col justify-between self-stretch py-1">
+                            <p class="font-semibold text-gray-800 leading-tight">${b.title}</p>
+                            <div class="flex justify-between items-center text-xs text-gray-500 mt-auto">
+                                <span>${b.location}, ${b.date}</span>
+                                <span class="flex items-center space-x-1.5">
+                                    <i class="far fa-eye"></i>
+                                    <span>${b.views}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>`).join('');
+            } else {
+                beritaContainer.innerHTML = '<p class="text-center text-gray-500">Memuat berita...</p>';
+            }
+           
+        }
+        
+        function showBeritaDetail(beritaId) {
+            console.log("DEBUG: Menampilkan detail berita untuk ID:", beritaId);
+            const item = allBeritaData.find(b => b.id === beritaId);
+            if (!item) {
+                console.error("DEBUG: Berita dengan ID", beritaId, "tidak ditemukan.");
+                return;
+            }
+
+            document.getElementById('berita-detail-title').textContent = item.title;
+            document.getElementById('berita-detail-meta-loc-date').textContent = `${item.location}, ${item.date}`;
+            document.getElementById('berita-detail-meta-views').innerHTML = `<i class="far fa-eye"></i><span>${item.views}</span>`;
+            document.getElementById('berita-detail-image').src = item.image;
+            document.getElementById('berita-detail-content').innerHTML = item.content;
+
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('home-page').classList.add('hidden');
+            document.getElementById('bottom-nav').classList.add('hidden');
+            document.getElementById('berita-detail-page').classList.remove('hidden');
+            document.querySelector('.preview-container').scrollTop = 0;
+        }
+
+        function hideBeritaDetail() {
+            console.log("DEBUG: Menyembunyikan detail berita dan kembali ke halaman utama.");
+            document.getElementById('berita-detail-page').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('home-page').classList.remove('hidden');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+        }
+
+        function initializeClickListeners() {
+            console.log("DEBUG: Menginisialisasi semua event listener klik.");
+            const purchasePopup = document.getElementById('purchase-popup');
+            const successPopup = document.getElementById('success-popup');
+            const paymentMethodSelect = document.getElementById('payment-method');
+            const paymentDetailsDiv = document.getElementById('payment-details');
+
+            document.body.addEventListener('click', (e) => {
+                const clickableItem = e.target.closest('[data-type]');
+                if (!clickableItem) return;
+                const { type, id } = clickableItem.dataset;
+                console.log(`DEBUG: Item diklik - Tipe: ${type}, ID: ${id}`);
+                
+                if (type === 'package') showPurchasePopup(packages[parseInt(id, 10)]);
+                else if (type === 'layanan') window.location.href = `layanan${parseInt(id, 10) + 1}.html`;
+                else if (type === 'promo') window.location.href = `promo${parseInt(id, 10) + 1}.html`;
+                else if (type === 'berita') showBeritaDetail(id);
+            });
+
+            document.getElementById('berita-detail-back-btn').addEventListener('click', hideBeritaDetail);
+            
+            document.getElementById('close-purchase-popup-btn').addEventListener('click', () => {
+                hidePopup(purchasePopup);
+            });
+
+            paymentMethodSelect.addEventListener('change', () => {
+                const selectedMethod = paymentMethodSelect.value;
+                console.log("DEBUG: Metode pembayaran diubah menjadi:", selectedMethod);
+                const details = paymentMethods[selectedMethod];
+
+                if (details) {
+                    if (details.type === 'text') {
+                        paymentDetailsDiv.innerHTML = `<p class="text-sm text-gray-700 text-center">${details.content}</p>`;
+                    } else if (details.type === 'image') {
+                        paymentDetailsDiv.innerHTML = `<img src="${details.content}" alt="QRIS Code" class="mx-auto rounded-md">`;
+                    }
+                    paymentDetailsDiv.classList.remove('hidden');
+                } else {
+                    paymentDetailsDiv.innerHTML = '';
+                    paymentDetailsDiv.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('purchase-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                console.log("DEBUG: Formulir pemesanan disubmit.");
+                
+                const form = e.target;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const selectedPackageTitle = document.getElementById('purchase-popup-title').textContent;
+                const paymentProofFile = document.getElementById('payment-proof').files[0];
+
+                if (!paymentProofFile) {
+                    alert('Harap unggah bukti pembayaran.');
+                    console.warn("DEBUG: Pengiriman dibatalkan, bukti pembayaran belum diunggah.");
+                    return;
+                }
+
+                console.log("DEBUG: Data pesanan yang akan dikirim:", {
+                    paket: selectedPackageTitle,
+                    ...data
+                });
+
+                const caption = `🔔 *Pesanan Paket Internet Baru* 🔔\n\n*Paket:* ${selectedPackageTitle}\n*Nama:* ${data.name}\n*Alamat:* ${data.address}\n*No. Telepon:* ${data.phone}\n*Email:* ${data.email}\n*Metode Pembayaran:* ${data['payment-method']}`;
+
+                const telegramFormData = new FormData();
+                telegramFormData.append('chat_id', TELEGRAM_CHAT_ID);
+                telegramFormData.append('caption', caption);
+                telegramFormData.append('parse_mode', 'Markdown');
+                telegramFormData.append('photo', paymentProofFile);
+                
+                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+                
+                try {
+                    console.log("DEBUG: Mengirim data ke API Telegram...");
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: telegramFormData,
+                    });
+                    const result = await response.json();
+                    console.log("DEBUG: Respon dari API Telegram:", result);
+                    if (!result.ok) throw new Error(result.description);
+                    
+                    console.log("DEBUG: Pesanan berhasil dikirim. Menampilkan pop-up sukses.");
+                    hidePopup(purchasePopup);
+                    setTimeout(() => showPopup(successPopup), 400);
+
+                } catch (error) {
+                    console.error('DEBUG: Terjadi error saat mengirim ke Telegram:', error);
+                    alert('Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi.');
+                }
+            });
+            
+            document.getElementById('close-success-popup-btn').addEventListener('click', () => {
+                 hidePopup(successPopup);
+            });
+             successPopup.addEventListener('click', (e) => {
+                if (e.target.id === 'success-popup') {
+                    hidePopup(successPopup);
+                }
+            });
+        }
+        
+        function showPurchasePopup(data) {
+            console.log("DEBUG: Menampilkan pop-up pemesanan untuk paket:", data.name);
+            const popup = document.getElementById('purchase-popup');
+            document.getElementById('purchase-popup-title').textContent = `${data.name} - ${data.speed}`;
+            document.getElementById('purchase-popup-price').textContent = data.price;
+            
+            const form = document.getElementById('purchase-form');
+            form.reset();
+            const fileNameDisplay = document.getElementById('file-name-display');
+            fileNameDisplay.textContent = 'Pilih file untuk diunggah';
+            fileNameDisplay.classList.add('text-gray-500');
+            fileNameDisplay.classList.remove('text-gray-800');
+
+            document.getElementById('payment-details').classList.add('hidden');
+            const submitBtn = document.getElementById('submit-purchase-btn');
+            submitBtn.classList.add('hidden');
+            
+            showPopup(popup);
+
+            const fileInput = document.getElementById('payment-proof');
+            fileInput.onchange = () => {
+                const fileIsSelected = fileInput.files.length > 0;
+                console.log("DEBUG: File bukti pembayaran dipilih:", fileIsSelected);
+                submitBtn.classList.toggle('hidden', !fileIsSelected);
+                if (fileIsSelected) {
+                    fileNameDisplay.textContent = fileInput.files[0].name;
+                    fileNameDisplay.classList.remove('text-gray-500');
+                    fileNameDisplay.classList.add('text-gray-800');
+                } else {
+                    fileNameDisplay.textContent = 'Pilih file untuk diunggah';
+                    fileNameDisplay.classList.add('text-gray-500');
+                    fileNameDisplay.classList.remove('text-gray-800');
+                }
+            };
+        }
+        
+        function hidePopup(popup) {
+            console.log("DEBUG: Menyembunyikan pop-up dengan ID:", popup.id);
+            popup.classList.remove('opacity-100');
+            setTimeout(() => popup.classList.add('hidden'), 300);
+        }
+        
+        function showPopup(popup) {
+            console.log("DEBUG: Menampilkan pop-up dengan ID:", popup.id);
+            popup.classList.remove('hidden');
+            setTimeout(() => {
+                popup.classList.add('opacity-100');
+            }, 10);
+        }
+
+        function initializeAutoSlider(sliderId, interval = 3000) {
+            const slider = document.getElementById(sliderId);
+            if (!slider || slider.children.length <= 1) {
+                console.warn(`DEBUG: Slider otomatis untuk #${sliderId} tidak diinisialisasi (tidak ditemukan atau hanya 1 slide).`);
+                return;
+            }
+            console.log(`DEBUG: Menginisialisasi slider otomatis untuk #${sliderId}.`);
+            let autoScrollInterval;
+            
+            const advanceSlide = () => {
+                const slides = slider.querySelectorAll('.layanan-slide, .promo-slide');
+                if(slides.length === 0) return;
+                const slideWidth = slides[0].offsetWidth;
+                const gap = parseInt(window.getComputedStyle(slider).gap) || 0;
+                let currentScroll = slider.scrollLeft;
+                let targetIndex = Math.round(currentScroll / (slideWidth + gap)) + 1;
+                if (targetIndex >= slides.length) { targetIndex = 0; }
+                slider.scrollTo({ left: targetIndex * (slideWidth + gap), behavior: 'smooth' });
+            };
+
+            const startAutoScroll = () => {
+                stopAutoScroll(); 
+                autoScrollInterval = setInterval(advanceSlide, interval);
+            };
+            const stopAutoScroll = () => clearInterval(autoScrollInterval);
+
+            slider.addEventListener('pointerdown', stopAutoScroll);
+            slider.addEventListener('pointerup', startAutoScroll);
+            
+            startAutoScroll();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DEBUG: DOM telah dimuat sepenuhnya. Memulai alur aplikasi utama.");
+            const loadingScreen = document.getElementById('loading-screen');
+            const appWrapper = document.getElementById('app-wrapper');
+            const showLoading = (isLoading) => {
+                console.log("DEBUG: Mengubah status layar pemuatan menjadi:", isLoading);
+                loadingScreen.classList.toggle('visible', isLoading);
+            };
+            
+            showLoading(true);
+
+            onAuthStateChanged(auth, (user) => {
+                console.log("DEBUG: onAuthStateChanged terpicu.");
+                if (!user) {
+                     console.log("DEBUG: Pengguna tidak login. Mengalihkan ke login.html.");
+                     showLoading(false); // Sembunyikan loading sebelum redirect
+                     window.location.replace('login.html');
+                } else {
+                    console.log("DEBUG: Pengguna login dengan UID:", user.uid);
+                    renderHomePageContent([]);
+                    initializeAutoSlider('layanan-slider');
+                    initializeAutoSlider('promo-slider-main');
+                    checkUnreadNotifications(user.uid);
+
+                    console.log("DEBUG: Menyiapkan listener untuk koleksi 'berita'.");
+                    const beritaCollection = collection(db, "berita");
+                    onSnapshot(beritaCollection, (snapshot) => {
+                        console.log("DEBUG: Menerima update berita dari Firestore. Jumlah dokumen:", snapshot.docs.length);
+                        allBeritaData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        allBeritaData.sort((a, b) => a.original_id - b.original_id);
+                        renderHomePageContent(allBeritaData);
+                    }, error => {
+                        console.error("DEBUG: Gagal mengambil data berita:", error);
+                    });
+                    
+                    initializeClickListeners();
+
+                    setTimeout(() => {
+                        console.log("DEBUG: Menampilkan konten aplikasi utama.");
+                        appWrapper.classList.add('visible');
+                        showLoading(false);
+                    }, 800);
+                }
+            });
+        });
+      
+      
+      async function checkAndResetPaymentStatus() {
+    const today = new Date();
+
+    // Hanya berjalan jika hari ini adalah tanggal 1
+    if (today.getDate() === 1) {
+        console.log("Hari ini tanggal 1. Memeriksa apakah reset pembayaran diperlukan...");
+        
+        // Membuat penanda unik untuk bulan ini, contoh: "2025-10"
+        const currentMonthMarker = `${today.getFullYear()}-${today.getMonth() + 1}`;
+        const lastResetRef = ref(database, 'admin/lastPaymentReset');
+
+        try {
+            const snapshot = await get(lastResetRef);
+            const lastResetMarker = snapshot.val();
+
+            // Jika penanda untuk bulan ini sudah ada, hentikan fungsi
+            if (lastResetMarker === currentMonthMarker) {
+                console.log("Reset pembayaran untuk bulan ini sudah dilakukan. Tidak ada tindakan.");
+                return;
+            }
+
+            // Jika belum direset, lanjutkan proses
+            console.log("Memulai proses reset status pembayaran...");
+            const customersRef = ref(database, 'customers');
+            const customersSnapshot = await get(customersRef);
+
+            if (customersSnapshot.exists()) {
+                const updates = {};
+                
+                // Mengumpulkan semua perubahan yang akan dilakukan
+                customersSnapshot.forEach(customerSnapshot => {
+                    const customerId = customerSnapshot.key;
+                    // Mengubah status BAYAR menjadi BELUM BAYAR
+                    updates[`customers/${customerId}/BAYAR`] = 'BELUM BAYAR';
+                });
+                
+                // Memperbarui penanda agar tidak berjalan dua kali
+                updates['admin/lastPaymentReset'] = currentMonthMarker;
+
+                // Mengirim semua perubahan ke Firebase dalam satu perintah
+                await update(ref(database), updates);
+                console.log("BERHASIL! Status pembayaran semua pelanggan telah direset.");
+            } else {
+                console.log("Tidak ada data customer untuk direset.");
+            }
+        } catch (error) {
+            console.error("Gagal melakukan reset status pembayaran:", error);
+        }
+    } else {
+        console.log("Hari ini bukan tanggal 1, tidak ada reset status pembayaran.");
+    }
+}
+    </script>
+</body>
+</html>
+
