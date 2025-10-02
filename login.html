@@ -197,7 +197,6 @@
             <button type="submit" id="loginButton" class="button" disabled>Masuk</button>
         </form>
      
-    
         <p class="divider-text"><span>atau</span></p>
 
         <div class="google-button-container">
@@ -206,12 +205,12 @@
                  Masuk dengan Google
              </button> 
         </div>
-       
+    
 
-        <div class="register-link-container">
+       <!--  <div class="register-link-container">
             Belum punya akun? 
             <a href="daftar.html">Daftar sekarang</a>
-        </div>
+        </div>-->
         
         <div class="copyright-compact">Copyright by Baraya.Net</div>
     </div>
@@ -278,23 +277,24 @@
         // Cek status login
         onAuthStateChanged(auth, user => {
             if (user) {
-                window.location.href = "https://baraya-net.github.io/pembayaran/";
+                window.location.href = "https://baraya-net.github.io/pembayaran
+
+";
             }
         });
 
         // Event Listeners
 
-        // [DINONAKTIFKAN] - Hapus komentar /* dan */ di bawah ini untuk mengaktifkan kembali Login dengan Google
-        /*
+        // Mengaktifkan kembali fungsionalitas login dengan Google
         loginGoogleButton.addEventListener('click', () => {
             const provider = new GoogleAuthProvider();
             signInWithPopup(auth, provider).catch(error => {
+                // Menghindari pesan error jika pengguna sengaja menutup pop-up login
                 if (error.code !== 'auth/popup-closed-by-user') {
                     Swal.fire({ icon: 'error', title: 'Oops...', text: 'Login dengan Google gagal.' });
                 }
             });
         });
-        */
         
         resetPasswordLink.addEventListener('click', event => {
             event.preventDefault();
@@ -345,11 +345,14 @@
         mainContent.classList.add("show");
 
         setTimeout(() => {
+            // Membuat loading screen tidak bisa diklik saat transisi
+            initialLoadingScreen.style.pointerEvents = 'none';
             initialLoadingScreen.style.opacity = '0';
+            
             initialLoadingScreen.addEventListener('transitionend', () => {
                 initialLoadingScreen.classList.add('hidden');
             }, { once: true });
-        }, 100);
+        }, 100); 
     });
 </script>
 
